@@ -12,29 +12,38 @@
 
 <div class="row g-4 mb-5">
     <!-- Stats Cards -->
-    <div class="col-md-4">
+    <div class="col-md-3">
         <div class="card h-100 border-0 shadow-sm bg-primary text-white">
             <div class="card-body">
-                <h5 class="card-title opacity-75">Unpacked Orders</h5>
-                <h2 class="display-4 fw-bold">{{ unpacked_count }}</h2>
-                <a href="{% url 'order_list' %}?status=unpacked" class="btn btn-light btn-sm mt-2 text-primary fw-bold">View Unpacked List</a>
+                <h5 class="card-title opacity-75">To Pack</h5>
+                <h2 class="display-5 fw-bold">{{ unpacked_count }}</h2>
+                <a href="{% url 'order_list' %}?status=unpacked" class="btn btn-light btn-sm mt-2 text-primary fw-bold">View List</a>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-3">
         <div class="card h-100 border-0 shadow-sm bg-success text-white">
             <div class="card-body">
-                <h5 class="card-title opacity-75">Packed Orders</h5>
-                <h2 class="display-4 fw-bold">{{ packed_count }}</h2>
-                <a href="{% url 'order_list' %}?status=packed" class="btn btn-light btn-sm mt-2 text-success fw-bold">View Packed List</a>
+                <h5 class="card-title opacity-75">Packed</h5>
+                <h2 class="display-5 fw-bold">{{ packed_count }}</h2>
+                <a href="{% url 'order_list' %}?status=packed" class="btn btn-light btn-sm mt-2 text-success fw-bold">View List</a>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-3">
+        <div class="card h-100 border-0 shadow-sm bg-info text-white">
+            <div class="card-body">
+                <h5 class="card-title opacity-75">Total Revenue</h5>
+                <h2 class="display-6 fw-bold">£{{ total_revenue|floatformat:2 }}</h2>
+                <p class="mb-0 opacity-75 small mt-2">Gross sales from all imports</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
         <div class="card h-100 border-0 shadow-sm">
             <div class="card-body">
-                <h5 class="card-title text-muted">Progress</h5>
-                <div style="height: 150px; position: relative;" class="d-flex justify-content-center align-items-center">
+                <h5 class="card-title text-muted" style="font-size: 0.9rem;">Progress</h5>
+                <div style="height: 100px; position: relative;" class="d-flex justify-content-center align-items-center">
                     <canvas id="fulfillmentChart"></canvas>
                 </div>
             </div>

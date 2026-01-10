@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.db.models import Q
+from django.db.models import Q, Sum
 from django.contrib.auth.decorators import login_required, user_passes_test
 from .models import Order
 
@@ -9,10 +9,13 @@ def dashboard(request):
     unpacked_count = Order.objects.filter(is_packed=False).count()
     recent_orders = Order.objects.filter(is_packed=False).order_by('created_at')[:5]
     
+    total_revenue = Order.objects.aggregate(Sum('subtotal'))['subtotal__sum'] or 0
+    
     return render(request, 'orders/dashboard.html', {
         'packed_count': packed_count,
         'unpacked_count': unpacked_count,
-        'recent_orders': recent_orders
+        'recent_orders': recent_orders,
+        'total_revenue': total_revenue
     })
 
 # Only allow superusers (admins) to access the views
