@@ -102,15 +102,11 @@
                     
                     <div class="section-title"><i class="bi bi-person"></i> Order Details</div>
                     <div class="row g-3 mb-4">
-                        <div class="col-md-5">
+                        <div class="col-md-6">
                             <label class="form-label">Customer Name</label>
                             {{ form.customer_name }}
                         </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Order Date</label>
-                            {{ form.order_date }}
-                        </div>
-                        <div class="col-md-2">
+                        <div class="col-md-4">
                             <label class="form-label">Subtotal</label>
                             {{ form.subtotal }}
                         </div>
@@ -160,11 +156,7 @@
 
                     <div class="d-grid gap-2 mt-4 pt-3 border-top">
                         <button type="submit" class="btn btn-success btn-create-order">
-                            {% if is_edit %}
-                            <i class="bi bi-check-circle me-2"></i>Save Changes
-                            {% else %}
                             <i class="bi bi-check-circle me-2"></i>Create Order
-                            {% endif %}
                         </button>
                         <a href="{% url 'order_list' %}" class="btn btn-outline-secondary">Cancel</a>
                     </div>
