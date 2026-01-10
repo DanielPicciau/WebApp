@@ -108,6 +108,41 @@
                  updateVisibility();
             }
         });
+
+        // Auto-Update Polling
+        (function() {
+            let lastTimestamp = null;
+            const updateUrl = "{% url 'check_updates' %}";
+
+            // Initial check to set baseline
+            fetch(updateUrl)
+                .then(response => response.json())
+                .then(data => {
+                    lastTimestamp = data.last_updated;
+                })
+                .catch(err => console.error("Initial update check failed", err));
+
+            // Poll every 5 seconds
+            setInterval(() => {
+                if (lastTimestamp === null) return;
+
+                fetch(updateUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.last_updated > lastTimestamp) {
+                            console.log("New data detected. Reloading...");
+                            // Optional: Check if user is typing (input in focus) to avoid disrupting them
+                            const activeTag = document.activeElement.tagName;
+                            if (activeTag === 'INPUT' || activeTag === 'TEXTAREA') {
+                                console.log("User is typing, skipping reload");
+                                return;
+                            }
+                            window.location.reload();
+                        }
+                    })
+                    .catch(err => console.error("Polling failed", err));
+            }, 5000);
+        })();
     </script>
     {% block extra_js %}{% endblock %}
   </body>

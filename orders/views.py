@@ -1,9 +1,20 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Q, Sum
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.http import JsonResponse
 from .models import Order
 from .forms import OrderForm, LineItemFormSet
 import re
+import time
+
+def check_updates(request):
+    """Returns the timestamp of the last updated order to trigger frontend refreshes."""
+    last_order = Order.objects.all().order_by('-updated_at').first()
+    if last_order:
+        timestamp = last_order.updated_at.timestamp()
+    else:
+        timestamp = 0
+    return JsonResponse({'last_updated': timestamp})
 
 def get_next_order_number():
     # Find the latest created order to increment from

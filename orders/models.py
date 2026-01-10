@@ -9,6 +9,7 @@ class Order(models.Model):
     is_fulfilled = models.BooleanField(default=False) # Represents Shopify/System status
     is_packed = models.BooleanField(default=False)    # Represents manual packing status
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.order_number
