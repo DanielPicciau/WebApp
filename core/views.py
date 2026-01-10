@@ -101,7 +101,8 @@ def analytics_api(request):
     
     # Pre-order vs Regular breakdown (for all time)
     preorder_total = LineItem.objects.filter(
-        product_name__icontains='Through Bear',
+        product_name__icontains='Through Bear'
+    ).filter(
         product_name__icontains='Pre-Order'
     ).aggregate(total=Sum('quantity'))['total'] or 0
     
