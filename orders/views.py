@@ -1,7 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Q
+from django.contrib.auth.decorators import login_required, user_passes_test
 from .models import Order
 
+# Only allow superusers (admins) to access the views
+@user_passes_test(lambda u: u.is_superuser) 
 def order_list(request):
     filter_status = request.GET.get('status', 'unpacked')
     search_query = request.GET.get('q', '')
@@ -25,6 +28,7 @@ def order_list(request):
         'search_query': search_query
     })
 
+@user_passes_test(lambda u: u.is_superuser)
 def toggle_order(request, order_id):
     order = get_object_or_404(Order, id=order_id)
     order.is_packed = not order.is_packed
