@@ -81,11 +81,23 @@ def order_list(request):
     else: # oldest
         orders = orders.order_by('created_at')
 
+    # Limit results if not searching and not explicitly viewing all
+    view_all = request.GET.get('view_all') == 'true'
+    total_count = orders.count()
+    showing_limited = False
+
+    if not search_query and not view_all:
+        if total_count > 5:
+            orders = orders[:5]
+            showing_limited = True
+
     return render(request, 'orders/order_list.html', {
         'orders': orders, 
         'filter_status': filter_status,
         'search_query': search_query,
-        'sort_option': sort_option
+        'sort_option': sort_option,
+        'showing_limited': showing_limited,
+        'total_count': total_count
     })
 
 @user_passes_test(lambda u: u.is_superuser)
