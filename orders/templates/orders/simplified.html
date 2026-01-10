@@ -1,6 +1,16 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<div class="container-fluid p-0">
+    <div class="row mb-2">
+        <div class="col-12 text-end">
+            <a href="{% url 'order_list' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-list-ul"></i> Advanced View
+            </a>
+        </div>
+    </div>
+</div>
+
 <div class="row min-vh-75 justify-content-center align-items-center" id="touch-area">
     <div class="col-md-8 col-lg-6">
         {% for order in page_obj %}
