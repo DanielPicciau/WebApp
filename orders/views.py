@@ -57,12 +57,12 @@ def dashboard(request):
 def order_list(request):
     filter_status = request.GET.get('status', 'unpacked')
     search_query = request.GET.get('q', '')
+    sort_option = request.GET.get('sort', 'oldest')
     
     if filter_status == 'packed':
-        orders = Order.objects.filter(is_packed=True).order_by('created_at')
+        orders = Order.objects.filter(is_packed=True)
     else:
-        orders = Order.objects.filter(is_packed=False).order_by('created_at')
-
+        orders = Order.objects.filter(is_packed=False)
 
     if search_query:
         orders = orders.filter(
@@ -70,11 +70,22 @@ def order_list(request):
             Q(customer_name__icontains=search_query) |
             Q(shipping_address__icontains=search_query)
         )
+        
+    # Apply Sorting
+    if sort_option == 'newest':
+        orders = orders.order_by('-created_at')
+    elif sort_option == 'value_high':
+        orders = orders.order_by('-subtotal')
+    elif sort_option == 'value_low':
+        orders = orders.order_by('subtotal')
+    else: # oldest
+        orders = orders.order_by('created_at')
 
     return render(request, 'orders/order_list.html', {
         'orders': orders, 
         'filter_status': filter_status,
-        'search_query': search_query
+        'search_query': search_query,
+        'sort_option': sort_option
     })
 
 @user_passes_test(lambda u: u.is_superuser)

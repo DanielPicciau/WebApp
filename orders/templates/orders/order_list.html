@@ -12,31 +12,43 @@
             </div>
             
             <form method="get" action="" class="row g-2">
-                <div class="col-md-9 col-sm-8">
+                <div class="col-md-6 col-sm-12">
                     <div class="input-group">
                         <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
                         <input type="text" name="q" class="form-control" value="{{ search_query }}" placeholder="Search by Order #, Name, or Address...">
                     </div>
                 </div>
-                <div class="col-md-3 col-sm-4 d-grid gap-2">
+                <div class="col-md-3 col-sm-6">
+                    <select name="sort" class="form-select" onchange="this.form.submit()">
+                        <option value="oldest" {% if sort_option == 'oldest' %}selected{% endif %}>📅 Oldest First</option>
+                        <option value="newest" {% if sort_option == 'newest' %}selected{% endif %}>📅 Newest First</option>
+                        <option value="value_high" {% if sort_option == 'value_high' %}selected{% endif %}>💰 Value: High to Low</option>
+                        <option value="value_low" {% if sort_option == 'value_low' %}selected{% endif %}>💰 Value: Low to High</option>
+                    </select>
+                </div>
+                <div class="col-md-3 col-sm-6 d-grid gap-2">
                     <input type="hidden" name="status" value="{{ filter_status }}">
-                    <button type="submit" class="btn btn-primary">Search</button>
-                    {% if search_query %}
-                        <a href="?status={{ filter_status }}" class="btn btn-outline-secondary">Clear</a>
-                    {% endif %}
+                    <button type="submit" class="btn btn-primary">Search & Sort</button>
                 </div>
             </form>
         </div>
     </div>
-
-    <!-- Tabs Navigation -->
+    
+    <!-- Sort Tabs Integration (Preserves sort order) -->
     <ul class="nav nav-pills nav-fill mb-3">
         <li class="nav-item">
-            <a class="nav-link {% if filter_status == 'unpacked' %}active{% endif %}" href="?status=unpacked{% if search_query %}&q={{ search_query }}{% endif %}">
+            <a class="nav-link {% if filter_status == 'unpacked' %}active{% endif %}" href="?status=unpacked&sort={{ sort_option }}{% if search_query %}&q={{ search_query }}{% endif %}">
                 <i class="bi bi-box-seam me-2"></i>To Pack
                 {% if filter_status == 'unpacked' %} <span class="badge bg-white text-primary ms-1">{{ orders.count }}</span>{% endif %}
             </a>
         </li>
+        <li class="nav-item">
+            <a class="nav-link {% if filter_status == 'packed' %}active{% endif %}" href="?status=packed&sort={{ sort_option }}{% if search_query %}&q={{ search_query }}{% endif %}">
+                <i class="bi bi-check-circle me-2"></i>Packed
+                {% if filter_status == 'packed' %} <span class="badge bg-white text-primary ms-1">{{ orders.count }}</span>{% endif %}
+            </a>
+        </li>
+    </ul>
         <li class="nav-item">
             <a class="nav-link {% if filter_status == 'packed' %}active{% endif %}" href="?status=packed{% if search_query %}&q={{ search_query }}{% endif %}">
                 <i class="bi bi-check-circle me-2"></i>Packed / Completed
