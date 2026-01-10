@@ -1,0 +1,7 @@
+orders_export.csv
+*.pyc
+__pycache__/
+db.sqlite3
+.DS_Store
+.venv/
+.env

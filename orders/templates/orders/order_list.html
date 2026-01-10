@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Fulfillment</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 20px; background-color: #f4f6f8; }
+        h1 { color: #333; }
+        .nav { margin-bottom: 20px; }
+        .nav a { margin-right: 10px; text-decoration: none; padding: 8px 16px; border: 1px solid #ccc; border-radius: 4px; color: #333; background: white; transition: all 0.2s; }
+        .nav a.active { background-color: #007bff; color: white; border-color: #007bff; }
+        .order-card { border: 1px solid #ddd; padding: 20px; margin-bottom: 20px; border-radius: 8px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .order-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 15px; }
+        .order-id { font-weight: bold; font-size: 1.25em; margin-bottom: 5px; color: #202223; }
+        .customer-info { color: #5c5f62; font-size: 0.95em; line-height: 1.4; }
+        .items-heading { font-size: 0.9em; text-transform: uppercase; color: #6d7175; margin-bottom: 10px; letter-spacing: 0.5px; }
+        .items-list { list-style: none; padding: 0; margin: 0; }
+        .item { padding: 10px 0; border-bottom: 1px solid #f1f2f3; display: flex; align-items: center; }
+        .item:last-child { border-bottom: none; }
+        .qty-badge { background: #e4e5e7; padding: 2px 8px; border-radius: 4px; font-weight: bold; margin-right: 10px; font-size: 0.9em; }
+        .btn-action { background-color: #008060; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; text-decoration: none; font-size: 1em; font-weight: 500; display: inline-block; }
+        .btn-action:hover { background-color: #006e52; }
+        .btn-undo { background-color: #6c757d; }
+        .btn-undo:hover { background-color: #5a6268; }
+        
+        @media (max-width: 600px) {
+            .order-header { flex-direction: column; }
+            .btn-action { margin-top: 15px; width: 100%; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+    <div style="max-width: 1400px; margin: 0 auto;">
+        <h1>📦 Fulfillment App</h1>
+
+        
+        <form method="get" action="" style="margin-bottom: 20px; display: flex; gap: 10px;">
+            <input type="text" name="q" value="{{ search_query }}" placeholder="Search orders..." style="flex-grow: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 16px;">
+            <input type="hidden" name="status" value="{{ filter_status }}">
+            <button type="submit" style="padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer;">Search</button>
+            {% if search_query %}
+                <a href="?status={{ filter_status }}" style="display: flex; align-items: center; padding: 0 10px; color: #666; text-decoration: none;">Clear</a>
+            {% endif %}
+        </form>
+
+        <div class="nav">
+            <a href="?status=unpacked{% if search_query %}&q={{ search_query }}{% endif %}" class="{% if filter_status == 'unpacked' %}active{% endif %}">To Pack</a>
+            <a href="?status=packed{% if search_query %}&q={{ search_query }}{% endif %}" class="{% if filter_status == 'packed' %}active{% endif %}">Packed</a>
+        </div>
+
+        <div class="orders-container">
+            {% for order in orders %}
+                <div class="order-card">
+                    <div class="order-header">
+                        <div>
+                            <div class="order-id">
+                                {{ order.order_number }} <span style="font-weight:normal; color:#888;">&bull;</span> {{ order.customer_name }}
+                                {% if order.is_fulfilled %}
+                                    <span style="font-size: 0.6em; background: #e3f1df; color: #004d00; padding: 2px 6px; border-radius: 4px; border: 1px solid #cce5c6; vertical-align: middle; margin-left: 10px;">SHOPIFY: FULFILLED</span>
+                                {% endif %}
+                            </div>
+                            <div class="customer-info" style="white-space: pre-wrap;">{{ order.shipping_address }}</div>
+                        </div>
+                        <a href="{% url 'toggle_order' order.id %}" class="btn-action {% if order.is_packed %}btn-undo{% endif %}">
+                            {% if order.is_packed %}Undo{% else %}Mark Packed{% endif %}
+                        </a>
+                    </div>
+                    
+                    <div class="items-heading">Items to Pack</div>
+                    <ul class="items-list">
+                        {% for item in order.items.all %}
+                            <li class="item">
+                                <span class="qty-badge">{{ item.quantity }}</span> 
+                                <div>
+                                    {{ item.product_name }} 
+                                    {% if item.sku %}
+                                        <div style="font-size: 0.8em; color: #888; margin-top: 2px;">SKU: {{ item.sku }}</div>
+                                    {% endif %}
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% empty %}
+                <div style="text-align: center; padding: 40px; color: #666;">
+                    <p style="font-size: 1.2em;">No orders found in this list! 🎉</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>
