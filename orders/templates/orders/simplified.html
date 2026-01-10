@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row min-vh-75 justify-content-center align-items-center" id="touch-area">
+    <div class="col-md-8 col-lg-6">
+        {% for order in page_obj %}
+        <div class="card shadow-lg border-0 h-100">
+            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3">
+                <h3 class="h4 mb-0 fw-bold">{{ order.order_number }}</h3>
+                <span class="badge bg-warning text-dark fs-6">{{ order.currency }} {{ order.subtotal }}</span>
+            </div>
+            <div class="card-body p-4 d-flex flex-column">
+                
+                <!-- Customer Info -->
+                <div class="mb-4 text-center">
+                    <h2 class="display-6 fw-bold privacy-mask">{{ order.customer_name }}</h2>
+                    <p class="text-muted privacy-mask">{{ order.shipping_address }}</p>
+                </div>
+
+                <hr>
+
+                <!-- Items List -->
+                <div class="flex-grow-1 overflow-auto mb-4" style="max-height: 40vh;">
+                    {% if order.items.all %}
+                        <ul class="list-group list-group-flush">
+                            {% for item in order.items.all %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center py-3 fs-5">
+                                <span>{{ item.product_name }}</span>
+                                <span class="badge bg-primary rounded-pill fs-5">{{ item.quantity }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-center text-muted">No items in this order.</p>
+                    {% endif %}
+                </div>
+
+                <!-- Action Button -->
+                <div class="d-grid gap-3">
+                    <a href="{% url 'toggle_order' order.id %}?next={% url 'simplified_view' %}?page={{ page_obj.number }}" class="btn btn-success btn-lg py-3 fw-bold text-uppercase fs-4 shadow">
+                        <i class="bi bi-box-seam me-2"></i> Mark Packed
+                    </a>
+                </div>
+
+            </div>
+            <div class="card-footer bg-light d-flex justify-content-between align-items-center py-3">
+                
+                {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-outline-secondary btn-lg" id="prev-btn">
+                        <i class="bi bi-arrow-left"></i> Prev
+                    </a>
+                {% else %}
+                    <button class="btn btn-outline-secondary btn-lg" disabled>
+                        <i class="bi bi-arrow-left"></i> Prev
+                    </button>
+                {% endif %}
+
+                <span class="text-muted fw-bold">Order {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}" class="btn btn-outline-secondary btn-lg" id="next-btn">
+                        Next <i class="bi bi-arrow-right"></i>
+                    </a>
+                {% else %}
+                    <button class="btn btn-outline-secondary btn-lg" disabled>
+                        Next <i class="bi bi-arrow-right"></i>
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="text-center py-5">
+            <h2 class="display-4 text-success mb-3">All Caught Up! 🎉</h2>
+            <p class="lead text-muted">No unpacked orders remaining.</p>
+            <a href="{% url 'dashboard' %}" class="btn btn-primary btn-lg mt-3">Back to Dashboard</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    // Basic Touch Swipe functionality
+    let touchStartX = 0;
+    let touchEndX = 0;
+    const touchArea = document.getElementById('touch-area');
+    
+    // Only enable swipe if we have content
+    if (document.querySelector('.card')) {
+        touchArea.addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+
+        touchArea.addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+    }
+
+    function handleSwipe() {
+        const threshold = 50; // min distance
+        if (touchEndX < touchStartX - threshold) {
+            // Swipe Left -> Next
+            const nextBtn = document.getElementById('next-btn');
+            if (nextBtn) nextBtn.click();
+        }
+        if (touchEndX > touchStartX + threshold) {
+            // Swipe Right -> Prev
+            const prevBtn = document.getElementById('prev-btn');
+            if (prevBtn) prevBtn.click();
+        }
+    }
+</script>
+{% endblock %}

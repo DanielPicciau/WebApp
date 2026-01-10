@@ -71,7 +71,26 @@ def toggle_order(request, order_id):
     order = get_object_or_404(Order, id=order_id)
     order.is_packed = not order.is_packed
     order.save()
+    
+    next_url = request.GET.get('next')
+    if next_url:
+        return redirect(next_url)
     return redirect('order_list')
+
+from django.core.paginator import Paginator
+
+@user_passes_test(lambda u: u.is_superuser)
+def simplified_view(request):
+    # Only get unpacked orders
+    orders_list = Order.objects.filter(is_packed=False).order_by('created_at')
+    
+    paginator = Paginator(orders_list, 1) # Show 1 order per page
+    
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    return render(request, 'orders/simplified.html', {'page_obj': page_obj})
+
 
 
 @user_passes_test(lambda u: u.is_superuser)
