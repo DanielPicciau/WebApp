@@ -36,7 +36,7 @@
                     </li>
                 </ul>
                 <div class="d-flex align-items-center">
-                    <button id="themeToggle" class="btn btn-outline-dark btn-sm me-2" title="Toggle Dark/Light Mode">
+                    <button id="themeToggle" class="btn btn-outline-light btn-sm me-2" title="Toggle Dark/Light Mode">
                         <i class="bi bi-moon-stars-fill"></i>
                     </button>
                      <button id="privacyToggle" class="btn btn-outline-warning btn-sm me-3" title="Toggle Customer Info">
@@ -73,12 +73,8 @@
                 if (themeToggleBtn) {
                     if (theme === 'dark') {
                         themeToggleBtn.innerHTML = '<i class="bi bi-sun-fill"></i>';
-                        themeToggleBtn.classList.remove('btn-outline-dark');
-                        themeToggleBtn.classList.add('btn-outline-light');
                     } else {
                         themeToggleBtn.innerHTML = '<i class="bi bi-moon-stars-fill"></i>';
-                        themeToggleBtn.classList.remove('btn-outline-light');
-                        themeToggleBtn.classList.add('btn-outline-dark');
                     }
                 }
             };
