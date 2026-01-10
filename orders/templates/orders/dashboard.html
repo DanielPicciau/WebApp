@@ -2,6 +2,117 @@
 
 {% block title %}Dashboard - Fulfillment App{% endblock %}
 
+{% block extra_css %}
+<style>
+    .stats-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stats-row > div {
+        flex: 1;
+        min-width: 200px;
+    }
+    
+    .stat-card {
+        border-radius: 10px;
+        padding: 0.875rem 1rem;
+        border: 1px solid var(--border-color);
+        background: var(--bg-primary);
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    [data-bs-theme="dark"] .stat-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+    
+    .stat-card-blue {
+        background: linear-gradient(135deg, #0f4c75 0%, #1a365d 100%);
+        border: none;
+        color: white;
+    }
+    
+    .stat-card-green {
+        background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+        border: none;
+        color: white;
+    }
+    
+    .stat-card-cyan {
+        background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
+        border: none;
+        color: white;
+    }
+    
+    .stat-card-title {
+        font-size: 0.7rem;
+        font-weight: 600;
+        opacity: 0.9;
+        margin-bottom: 0.25rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .stat-card-value {
+        font-size: 1.25rem;
+        font-weight: 700;
+        line-height: 1.1;
+        margin-bottom: 0.375rem;
+    }
+    
+    .stat-card-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.15s ease;
+    }
+    
+    .stat-card-blue .stat-card-link,
+    .stat-card-green .stat-card-link,
+    .stat-card-cyan .stat-card-link {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+    }
+    
+    .stat-card-blue .stat-card-link:hover,
+    .stat-card-green .stat-card-link:hover,
+    .stat-card-cyan .stat-card-link:hover {
+        background: rgba(255, 255, 255, 0.3);
+    }
+    
+    .chart-card {
+        padding: 0.75rem;
+    }
+    
+    .chart-container {
+        height: 60px;
+    }
+    
+    .recent-orders-card {
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    
+    .recent-orders-header {
+        background: var(--bg-tertiary);
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="row mb-4">
     <div class="col-12">
@@ -10,42 +121,39 @@
     </div>
 </div>
 
-<div class="row g-4 mb-5">
-    <!-- Stats Cards -->
-    <div class="col-md-3">
-        <div class="card h-100 border-0 shadow-sm bg-primary text-white">
-            <div class="card-body">
-                <h5 class="card-title opacity-75">To Pack</h5>
-                <h2 class="display-5 fw-bold">{{ unpacked_count }}</h2>
-                <a href="{% url 'order_list' %}?status=unpacked" class="btn btn-light btn-sm mt-2 text-primary fw-bold">View List</a>
+<div class="stats-row">
+    <div>
+        <div class="stat-card stat-card-blue">
+            <div class="stat-card-title">To Pack</div>
+            <div class="stat-card-value">{{ unpacked_count }}</div>
+            <a href="{% url 'order_list' %}?status=unpacked" class="stat-card-link">
+                View List <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+    <div>
+        <div class="stat-card stat-card-green">
+            <div class="stat-card-title">Packed</div>
+            <div class="stat-card-value">{{ packed_count }}</div>
+            <a href="{% url 'order_list' %}?status=packed" class="stat-card-link">
+                View List <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+    <div>
+        <div class="stat-card stat-card-cyan">
+            <div class="stat-card-title">Total Revenue</div>
+            <div class="stat-card-value">£{{ total_revenue|floatformat:2 }}</div>
+            <div class="stat-card-link" style="opacity: 0.8; cursor: default;">
+                Gross sales
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card h-100 border-0 shadow-sm bg-success text-white">
-            <div class="card-body">
-                <h5 class="card-title opacity-75">Packed</h5>
-                <h2 class="display-5 fw-bold">{{ packed_count }}</h2>
-                <a href="{% url 'order_list' %}?status=packed" class="btn btn-light btn-sm mt-2 text-success fw-bold">View List</a>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card h-100 border-0 shadow-sm bg-info text-white">
-            <div class="card-body">
-                <h5 class="card-title opacity-75">Total Revenue</h5>
-                <h2 class="display-6 fw-bold">£{{ total_revenue|floatformat:2 }}</h2>
-                <p class="mb-0 opacity-75 small mt-2">Gross sales from all imports</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card h-100 border-0 shadow-sm">
-            <div class="card-body">
-                <h5 class="card-title text-muted" style="font-size: 0.9rem;">Progress</h5>
-                <div style="height: 100px; position: relative;" class="d-flex justify-content-center align-items-center">
-                    <canvas id="fulfillmentChart"></canvas>
-                </div>
+    <div>
+        <div class="stat-card chart-card">
+            <div class="stat-card-title" style="color: var(--text-secondary);">Progress</div>
+            <div class="chart-container">
+                <canvas id="fulfillmentChart"></canvas>
             </div>
         </div>
     </div>
@@ -53,8 +161,8 @@
 
 <div class="row">
     <div class="col-12">
-        <div class="card border-0 shadow-sm">
-            <div class="card-header py-3">
+        <div class="card recent-orders-card">
+            <div class="recent-orders-header">
                 <h5 class="mb-0 fw-bold">Recent Unpacked Orders</h5>
             </div>
             <div class="list-group list-group-flush">
@@ -83,6 +191,8 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     const ctx = document.getElementById('fulfillmentChart');
+    const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+    
     if (ctx) {
         new Chart(ctx, {
             type: 'doughnut',
@@ -90,7 +200,7 @@
                 labels: ['Packed', 'Unpacked'],
                 datasets: [{
                     data: [{{ packed_count }}, {{ unpacked_count }}],
-                    backgroundColor: ['#198754', '#0d6efd'],
+                    backgroundColor: ['#22c55e', '#3b82f6'],
                     borderWidth: 0
                 }]
             },
@@ -99,7 +209,13 @@
                 maintainAspectRatio: false,
                 plugins: {
                     legend: {
-                        position: 'right'
+                        position: 'right',
+                        labels: {
+                            color: isDark ? '#94a3b8' : '#64748b',
+                            font: {
+                                family: 'Inter'
+                            }
+                        }
                     }
                 }
             }

@@ -1,23 +1,116 @@
 {% extends 'base.html' %}
 
+{% block extra_css %}
+<style>
+    .add-order-card {
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    
+    .add-order-header {
+        background: linear-gradient(135deg, #0f4c75 0%, #1a365d 100%);
+        color: white;
+        padding: 1.25rem 1.5rem;
+    }
+    
+    [data-bs-theme="dark"] .add-order-header {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    }
+    
+    .add-order-header h2 {
+        color: white;
+    }
+    
+    .section-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .section-title i {
+        color: var(--accent);
+    }
+    
+    .quick-add-btn {
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.15s ease;
+    }
+    
+    .quick-add-book {
+        background: var(--accent-light);
+        border: 1px solid var(--accent);
+        color: var(--accent);
+    }
+    
+    .quick-add-book:hover {
+        background: var(--accent);
+        color: white;
+    }
+    
+    .quick-add-donation {
+        background: var(--success-light);
+        border: 1px solid var(--success);
+        color: var(--success);
+    }
+    
+    .quick-add-donation:hover {
+        background: var(--success);
+        color: white;
+    }
+    
+    .item-row {
+        background: var(--bg-tertiary);
+        padding: 1.25rem 1rem;
+        border-radius: 8px;
+        margin-bottom: 0.75rem;
+        border: 1px solid var(--border-color);
+    }
+    
+    .btn-create-order {
+        padding: 0.875rem;
+        font-weight: 600;
+        font-size: 1rem;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="row mb-4">
     <div class="col-12">
-        <div class="card shadow-sm">
-            <div class="card-header bg-primary text-white">
-                <h2 class="h5 mb-0">Add New Order</h2>
+        <div class="card add-order-card">
+            <div class="add-order-header">
+                <h2 class="h5 mb-0">
+                    {% if is_edit %}
+                    <i class="bi bi-pencil-square me-2"></i>Edit Order {{ order.order_number }}
+                    {% else %}
+                    <i class="bi bi-plus-circle me-2"></i>Add New Order
+                    {% endif %}
+                </h2>
             </div>
-            <div class="card-body">
+            <div class="card-body p-4">
                 <form method="post">
                     {% csrf_token %}
                     
-                    <h4 class="mb-3">Order Details</h4>
+                    <div class="section-title"><i class="bi bi-person"></i> Order Details</div>
                     <div class="row g-3 mb-4">
-                        <div class="col-md-6">
+                        <div class="col-md-5">
                             <label class="form-label">Customer Name</label>
                             {{ form.customer_name }}
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
+                            <label class="form-label">Order Date</label>
+                            {{ form.order_date }}
+                        </div>
+                        <div class="col-md-2">
                             <label class="form-label">Subtotal</label>
                             {{ form.subtotal }}
                         </div>
@@ -27,15 +120,15 @@
                         </div>
                     </div>
 
-                    <h4 class="mb-3">Items</h4>
+                    <div class="section-title"><i class="bi bi-box-seam"></i> Items</div>
                     
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Quick Add:</label>
-                        <div>
-                            <button type="button" class="btn btn-outline-primary btn-sm me-2" id="btn-add-book">
+                        <label class="form-label text-muted" style="font-size: 0.875rem;">Quick Add:</label>
+                        <div class="d-flex flex-wrap gap-2">
+                            <button type="button" class="quick-add-btn quick-add-book" id="btn-add-book">
                                 <i class="bi bi-book"></i> Through Bear's Eyes (£16.99)
                             </button>
-                            <button type="button" class="btn btn-outline-success btn-sm" id="btn-add-donation">
+                            <button type="button" class="quick-add-btn quick-add-donation" id="btn-add-donation">
                                 <i class="bi bi-heart"></i> Add Donation/Tip
                             </button>
                         </div>
@@ -44,7 +137,7 @@
                     {{ formset.management_form }}
                     <div id="items-container">
                         {% for form in formset %}
-                        <div class="item-row row g-3 mb-2 align-items-end">
+                        <div class="item-row row g-3 align-items-end">
                             {{ form.id }}
                             <div class="col-md-7">
                                 <label class="form-label">Product Name</label>
@@ -61,12 +154,18 @@
                         {% endfor %}
                     </div>
                     
-                    <button type="button" class="btn btn-secondary btn-sm mb-4" id="add-item-btn">
+                    <button type="button" class="btn btn-outline-secondary btn-sm mb-4" id="add-item-btn">
                         <i class="bi bi-plus-circle"></i> Add Custom Item
                     </button>
 
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-success">Create Order</button>
+                    <div class="d-grid gap-2 mt-4 pt-3 border-top">
+                        <button type="submit" class="btn btn-success btn-create-order">
+                            {% if is_edit %}
+                            <i class="bi bi-check-circle me-2"></i>Save Changes
+                            {% else %}
+                            <i class="bi bi-check-circle me-2"></i>Create Order
+                            {% endif %}
+                        </button>
                         <a href="{% url 'order_list' %}" class="btn btn-outline-secondary">Cancel</a>
                     </div>
                 </form>

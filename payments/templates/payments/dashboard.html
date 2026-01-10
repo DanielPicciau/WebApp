@@ -1,0 +1,493 @@
+{% extends 'base_global.html' %}
+
+{% block title %}Daniel Payments | The Little Library{% endblock %}
+
+{% block extra_css %}
+<style>
+    .main-content {
+        padding: 2rem 0;
+    }
+    
+    .page-header {
+        margin-bottom: 2rem;
+    }
+    
+    .page-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+    }
+    
+    .page-subtitle {
+        color: var(--text-secondary);
+        font-size: 0.9375rem;
+    }
+    
+    .alert {
+        border-radius: 10px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.25rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 1.5rem;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    }
+    
+    [data-bs-theme="dark"] .stat-card:hover {
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+    }
+    
+    .stat-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+    }
+    
+    .stat-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.125rem;
+        color: white;
+    }
+    
+    .stat-icon-purple { background: linear-gradient(135deg, #6366f1, #4f46e5); }
+    .stat-icon-green { background: linear-gradient(135deg, #22c55e, #16a34a); }
+    .stat-icon-blue { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+    .stat-icon-orange { background: linear-gradient(135deg, #f97316, #ea580c); }
+    .stat-icon-red { background: linear-gradient(135deg, #ef4444, #dc2626); }
+    
+    .stat-value {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 0.25rem;
+    }
+    
+    .stat-label {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+    }
+    
+    .content-card {
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 1.5rem;
+    }
+    
+    .content-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1.25rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .content-card-title {
+        font-size: 1.0625rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0;
+    }
+    
+    .info-box {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 1rem 1.25rem;
+        margin-bottom: 1.5rem;
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        line-height: 1.6;
+    }
+    
+    .info-box strong {
+        color: var(--text-primary);
+    }
+    
+    .info-box i {
+        color: var(--accent);
+    }
+    
+    /* Period Table */
+    .periods-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .periods-table th,
+    .periods-table td {
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 1px solid var(--border-color);
+        vertical-align: middle;
+    }
+    
+    .periods-table th {
+        font-weight: 600;
+        font-size: 0.8125rem;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .periods-table tbody tr:hover {
+        background: var(--bg-secondary);
+    }
+    
+    .periods-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+    
+    .period-name {
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+    
+    .period-dates {
+        font-size: 0.8125rem;
+        color: var(--text-secondary);
+        margin-top: 0.25rem;
+    }
+    
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        padding: 0.375rem 0.875rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+    
+    .status-pending {
+        background: #f1f5f9;
+        color: #64748b;
+    }
+    
+    [data-bs-theme="dark"] .status-pending {
+        background: rgba(100, 116, 139, 0.2);
+    }
+    
+    .status-due {
+        background: #fef3c7;
+        color: #d97706;
+    }
+    
+    [data-bs-theme="dark"] .status-due {
+        background: rgba(217, 119, 6, 0.2);
+    }
+    
+    .status-overdue {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+    
+    [data-bs-theme="dark"] .status-overdue {
+        background: rgba(220, 38, 38, 0.2);
+    }
+    
+    .status-paid {
+        background: #dcfce7;
+        color: #16a34a;
+    }
+    
+    [data-bs-theme="dark"] .status-paid {
+        background: rgba(22, 163, 74, 0.2);
+    }
+    
+    .amount {
+        font-weight: 600;
+        font-size: 1.0625rem;
+        color: var(--text-primary);
+    }
+    
+    .books-input {
+        width: 80px;
+        padding: 0.4rem 0.6rem;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        font-size: 0.875rem;
+        text-align: center;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+    }
+    
+    .books-input:focus {
+        outline: none;
+        border-color: var(--accent);
+    }
+    
+    .payment-btn {
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        border: none;
+        cursor: pointer;
+        transition: all 0.15s;
+        white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        z-index: 1;
+        text-decoration: none;
+        line-height: 1.4;
+    }
+    
+    .payment-btn.btn-save {
+        background: var(--accent);
+        color: white;
+    }
+    
+    .payment-btn.btn-save:hover {
+        opacity: 0.9;
+    }
+    
+    .payment-btn.btn-paid {
+        background: #22c55e;
+        color: white;
+    }
+    
+    .payment-btn.btn-paid:hover {
+        background: #16a34a;
+    }
+    
+    [data-bs-theme="dark"] .payment-btn.btn-paid {
+        background: #22c55e;
+        color: white;
+    }
+    
+    [data-bs-theme="dark"] .payment-btn.btn-paid:hover {
+        background: #16a34a;
+    }
+    
+    .payment-btn.btn-unpaid {
+        background: #e2e8f0;
+        color: #475569;
+    }
+    
+    .payment-btn.btn-unpaid:hover {
+        background: #cbd5e1;
+    }
+    
+    [data-bs-theme="dark"] .payment-btn.btn-unpaid {
+        background: #334155;
+        color: #94a3b8;
+    }
+    
+    [data-bs-theme="dark"] .payment-btn.btn-unpaid:hover {
+        background: #475569;
+    }
+    
+    .due-date {
+        font-size: 0.8125rem;
+        color: var(--text-secondary);
+    }
+    
+    .due-date.overdue {
+        color: #dc2626;
+        font-weight: 500;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: var(--text-secondary);
+    }
+    
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+    
+    .empty-state p {
+        margin: 0;
+        font-size: 0.9375rem;
+    }
+    
+    @media (max-width: 768px) {
+        .periods-table {
+            display: block;
+            overflow-x: auto;
+        }
+        
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1 class="page-title">Daniel Payments</h1>
+        <p class="page-subtitle">"Through Bear's Eyes" royalty tracking - £1 per book sold</p>
+    </div>
+    
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    {% endif %}
+    
+    <div class="info-box">
+        <strong><i class="bi bi-info-circle me-1"></i> Payment Terms:</strong>
+        Book launched <strong>16 December 2025</strong>. Daniel earns £1 per "Through Bear's Eyes" book sold each month. 
+        Payment is due by the <strong>last day of the following month</strong>.
+        <br><br>
+        <i class="bi bi-gear me-1"></i> <em>Books sold are automatically calculated from orders in the system.</em>
+    </div>
+    
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-header">
+                <div class="stat-icon stat-icon-blue">
+                    <i class="bi bi-book"></i>
+                </div>
+            </div>
+            <div class="stat-value">{{ total_books }}</div>
+            <div class="stat-label">Total Books Sold</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-header">
+                <div class="stat-icon stat-icon-purple">
+                    <i class="bi bi-currency-pound"></i>
+                </div>
+            </div>
+            <div class="stat-value">£{{ total_amount }}</div>
+            <div class="stat-label">Total Owed (All Time)</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-header">
+                <div class="stat-icon stat-icon-green">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+            </div>
+            <div class="stat-value">£{{ total_paid }}</div>
+            <div class="stat-label">Total Paid</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-header">
+                <div class="stat-icon stat-icon-{% if total_outstanding > 0 %}orange{% else %}green{% endif %}">
+                    <i class="bi bi-hourglass-split"></i>
+                </div>
+            </div>
+            <div class="stat-value">£{{ total_outstanding }}</div>
+            <div class="stat-label">Outstanding</div>
+        </div>
+    </div>
+    
+    {% if overdue_count > 0 %}
+    <div class="alert alert-danger">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        <strong>{{ overdue_count }} payment{{ overdue_count|pluralize }} overdue!</strong> Please process payments immediately.
+    </div>
+    {% endif %}
+    
+    <div class="content-card">
+        <div class="content-card-header">
+            <h2 class="content-card-title">Payment Periods</h2>
+        </div>
+        
+        {% if periods %}
+        <table class="periods-table">
+            <thead>
+                <tr>
+                    <th>Period</th>
+                    <th>Books Sold</th>
+                    <th>Amount</th>
+                    <th>Due Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for period in periods %}
+                <tr>
+                    <td>
+                        <div class="period-name">{{ period.period_name }}</div>
+                        <div class="period-dates">{{ period.start_date|date:"j M" }} - {{ period.end_date|date:"j M Y" }}</div>
+                    </td>
+                    <td>
+                        <span class="books-count">{{ period.books_sold }}</span>
+                    </td>
+                    <td>
+                        <span class="amount">£{{ period.total_amount }}</span>
+                    </td>
+                    <td>
+                        <span class="due-date {% if period.is_overdue %}overdue{% endif %}">
+                            {{ period.payment_due_date|date:"j M Y" }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="status-badge status-{{ period.status }}">
+                            {% if period.status == 'paid' %}
+                                <i class="bi bi-check-circle-fill"></i> Paid
+                            {% elif period.status == 'overdue' %}
+                                <i class="bi bi-exclamation-circle-fill"></i> Overdue
+                            {% elif period.status == 'due' %}
+                                <i class="bi bi-clock-fill"></i> Due
+                            {% else %}
+                                <i class="bi bi-hourglass"></i> Pending
+                            {% endif %}
+                        </span>
+                    </td>
+                    <td>
+                        {% if period.status == 'paid' %}
+                            <form action="{% url 'mark_unpaid' period.id %}" method="post" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="payment-btn btn-unpaid">Mark Unpaid</button>
+                            </form>
+                        {% else %}
+                            <form action="{% url 'mark_paid' period.id %}" method="post" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="payment-btn btn-paid">Mark Paid</button>
+                            </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-calendar-x"></i>
+            <p>No payment periods found.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

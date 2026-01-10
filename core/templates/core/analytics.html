@@ -1,0 +1,801 @@
+{% extends 'base_global.html' %}
+
+{% block title %}Through Bear's Eyes Analytics | The Little Library{% endblock %}
+
+{% block extra_css %}
+<style>
+    .main-content {
+        padding: 2rem 0;
+    }
+    
+    .page-header {
+        margin-bottom: 2rem;
+    }
+    
+    .page-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .page-title i {
+        color: #8b5cf6;
+    }
+    
+    .page-subtitle {
+        color: var(--text-secondary);
+        font-size: 0.9375rem;
+    }
+    
+    /* Controls Bar */
+    .controls-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        padding: 1.25rem;
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+    }
+    
+    .control-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .control-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--text-secondary);
+    }
+    
+    .btn-group-custom {
+        display: flex;
+        gap: 0.25rem;
+    }
+    
+    .btn-toggle {
+        padding: 0.5rem 1rem;
+        border: 1px solid var(--border-color);
+        background: var(--bg-secondary);
+        color: var(--text-secondary);
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+    
+    .btn-toggle:first-child {
+        border-radius: 8px 0 0 8px;
+    }
+    
+    .btn-toggle:last-child {
+        border-radius: 0 8px 8px 0;
+    }
+    
+    .btn-toggle:not(:first-child) {
+        border-left: none;
+    }
+    
+    .btn-toggle:hover {
+        background: var(--bg-tertiary);
+    }
+    
+    .btn-toggle.active {
+        background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+        color: white;
+        border-color: #8b5cf6;
+    }
+    
+    .btn-toggle.active + .btn-toggle {
+        border-left: 1px solid var(--border-color);
+    }
+    
+    /* Loading State */
+    .loading-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(var(--bg-primary-rgb), 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        z-index: 10;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+    }
+    
+    .loading-overlay.show {
+        opacity: 1;
+        pointer-events: auto;
+    }
+    
+    .spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid var(--border-color);
+        border-top-color: #8b5cf6;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    /* Stat Cards Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 1.5rem;
+        position: relative;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+    
+    [data-bs-theme="dark"] .stat-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+    
+    .stat-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+    }
+    
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        color: white;
+    }
+    
+    .stat-icon-purple { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+    .stat-icon-blue { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+    .stat-icon-green { background: linear-gradient(135deg, #22c55e, #16a34a); }
+    .stat-icon-orange { background: linear-gradient(135deg, #f97316, #ea580c); }
+    .stat-icon-cyan { background: linear-gradient(135deg, #06b6d4, #0891b2); }
+    
+    .stat-change {
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.25rem 0.625rem;
+        border-radius: 50px;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    
+    .stat-change-up {
+        background: rgba(34, 197, 94, 0.15);
+        color: #16a34a;
+    }
+    
+    [data-bs-theme="dark"] .stat-change-up {
+        color: #4ade80;
+    }
+    
+    .stat-change-down {
+        background: rgba(239, 68, 68, 0.15);
+        color: #dc2626;
+    }
+    
+    [data-bs-theme="dark"] .stat-change-down {
+        color: #f87171;
+    }
+    
+    .stat-change-neutral {
+        background: var(--bg-tertiary);
+        color: var(--text-secondary);
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        line-height: 1.2;
+        margin-bottom: 0.25rem;
+    }
+    
+    .stat-label {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+    }
+    
+    /* Charts Section */
+    .charts-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    @media (max-width: 992px) {
+        .charts-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    .chart-card {
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 1.5rem;
+        position: relative;
+    }
+    
+    .chart-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1.25rem;
+    }
+    
+    .chart-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0;
+    }
+    
+    .chart-container {
+        position: relative;
+        height: 280px;
+    }
+    
+    /* Breakdown Donut */
+    .breakdown-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+    }
+    
+    .breakdown-chart {
+        position: relative;
+        height: 180px;
+        width: 180px;
+    }
+    
+    .breakdown-legend {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        margin-top: 1.5rem;
+        width: 100%;
+    }
+    
+    .legend-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.75rem 1rem;
+        background: var(--bg-secondary);
+        border-radius: 8px;
+    }
+    
+    .legend-color {
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+        margin-right: 0.75rem;
+    }
+    
+    .legend-color-preorder { background: #8b5cf6; }
+    .legend-color-regular { background: #22c55e; }
+    
+    .legend-label {
+        flex: 1;
+        font-weight: 500;
+        color: var(--text-primary);
+    }
+    
+    .legend-value {
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+    
+    /* Recent Sales Table */
+    .sales-table-container {
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .sales-table-header {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .sales-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .sales-table th {
+        text-align: left;
+        padding: 0.875rem 1.5rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--text-secondary);
+        background: var(--bg-secondary);
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .sales-table td {
+        padding: 1rem 1.5rem;
+        font-size: 0.875rem;
+        color: var(--text-primary);
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .sales-table tr:last-child td {
+        border-bottom: none;
+    }
+    
+    .sales-table tr:hover td {
+        background: var(--bg-secondary);
+    }
+    
+    .order-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 600;
+        color: var(--accent);
+    }
+    
+    .type-badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .type-badge-preorder {
+        background: rgba(139, 92, 246, 0.15);
+        color: #8b5cf6;
+    }
+    
+    .type-badge-regular {
+        background: rgba(34, 197, 94, 0.15);
+        color: #22c55e;
+    }
+    
+    .qty-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 28px;
+        padding: 0.25rem 0.5rem;
+        background: var(--bg-tertiary);
+        border-radius: 6px;
+        font-weight: 600;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1.5rem;
+        color: var(--text-secondary);
+    }
+    
+    .empty-state i {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="bi bi-book-half"></i>
+            Through Bear's Eyes Analytics
+        </h1>
+        <p class="page-subtitle">Track sales performance for Through Bear's Eyes across different time periods</p>
+    </div>
+    
+    <!-- Controls Bar -->
+    <div class="controls-bar">
+        <div class="control-group">
+            <span class="control-label">Time Period</span>
+            <div class="btn-group-custom" id="periodToggle">
+                <button class="btn-toggle" data-period="day">Today</button>
+                <button class="btn-toggle" data-period="week">Week</button>
+                <button class="btn-toggle active" data-period="month">Month</button>
+                <button class="btn-toggle" data-period="year">Year</button>
+            </div>
+        </div>
+        
+        <div class="control-group">
+            <span class="control-label">Order Type</span>
+            <div class="btn-group-custom" id="typeToggle">
+                <button class="btn-toggle active" data-type="all">All Sales</button>
+                <button class="btn-toggle" data-type="preorder">Pre-Orders</button>
+                <button class="btn-toggle" data-type="regular">Regular</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Stats Grid -->
+    <div class="stats-grid" id="statsGrid">
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <div class="stat-icon stat-icon-purple">
+                    <i class="bi bi-book"></i>
+                </div>
+                <span class="stat-change stat-change-neutral" id="booksSoldChange">
+                    <i class="bi bi-dash"></i> --
+                </span>
+            </div>
+            <div class="stat-value" id="booksSold">--</div>
+            <div class="stat-label">Books Sold (Period)</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <div class="stat-icon stat-icon-blue">
+                    <i class="bi bi-cart3"></i>
+                </div>
+                <span class="stat-change stat-change-neutral" id="ordersChange">
+                    <i class="bi bi-dash"></i> --
+                </span>
+            </div>
+            <div class="stat-value" id="ordersCount">--</div>
+            <div class="stat-label">Orders (Period)</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <div class="stat-icon stat-icon-green">
+                    <i class="bi bi-trophy"></i>
+                </div>
+            </div>
+            <div class="stat-value" id="allTimeBooks">--</div>
+            <div class="stat-label">All-Time Books Sold</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <div class="stat-icon stat-icon-orange">
+                    <i class="bi bi-bag-check"></i>
+                </div>
+            </div>
+            <div class="stat-value" id="allTimeOrders">--</div>
+            <div class="stat-label">All-Time Orders</div>
+        </div>
+    </div>
+    
+    <!-- Charts -->
+    <div class="charts-grid">
+        <div class="chart-card">
+            <div class="loading-overlay" id="chartLoading">
+                <div class="spinner"></div>
+            </div>
+            <div class="chart-card-header">
+                <h3 class="chart-title" id="chartTitle">Sales Over Time</h3>
+            </div>
+            <div class="chart-container">
+                <canvas id="salesChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="chart-card">
+            <div class="chart-card-header">
+                <h3 class="chart-title">Pre-Order vs Regular (All Time)</h3>
+            </div>
+            <div class="breakdown-container">
+                <div class="breakdown-chart">
+                    <canvas id="breakdownChart"></canvas>
+                </div>
+                <div class="breakdown-legend">
+                    <div class="legend-item">
+                        <div class="legend-color legend-color-preorder"></div>
+                        <span class="legend-label">Pre-Orders</span>
+                        <span class="legend-value" id="preorderCount">--</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color legend-color-regular"></div>
+                        <span class="legend-label">Regular Sales</span>
+                        <span class="legend-value" id="regularCount">--</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Sales -->
+    <div class="sales-table-container">
+        <div class="loading-overlay" id="tableLoading">
+            <div class="spinner"></div>
+        </div>
+        <div class="sales-table-header">
+            <h3 class="chart-title">Recent Sales</h3>
+        </div>
+        <table class="sales-table">
+            <thead>
+                <tr>
+                    <th>Order</th>
+                    <th>Customer</th>
+                    <th>Type</th>
+                    <th>Qty</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody id="salesTableBody">
+                <tr>
+                    <td colspan="5" class="empty-state">
+                        <i class="bi bi-hourglass-split"></i>
+                        <p>Loading sales data...</p>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let currentPeriod = 'month';
+    let currentType = 'all';
+    let salesChart = null;
+    let breakdownChart = null;
+    
+    const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+    const textColor = isDark ? '#94a3b8' : '#64748b';
+    const gridColor = isDark ? '#334155' : '#e2e8f0';
+    
+    // Initialize charts
+    initCharts();
+    
+    // Load initial data
+    loadData();
+    
+    // Period toggle handlers
+    document.querySelectorAll('#periodToggle .btn-toggle').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('#periodToggle .btn-toggle').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            currentPeriod = this.dataset.period;
+            loadData();
+        });
+    });
+    
+    // Type toggle handlers
+    document.querySelectorAll('#typeToggle .btn-toggle').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('#typeToggle .btn-toggle').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            currentType = this.dataset.type;
+            loadData();
+        });
+    });
+    
+    function initCharts() {
+        // Sales Chart
+        const salesCtx = document.getElementById('salesChart').getContext('2d');
+        salesChart = new Chart(salesCtx, {
+            type: 'bar',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Books Sold',
+                    data: [],
+                    backgroundColor: isDark ? 'rgba(139, 92, 246, 0.8)' : 'rgba(139, 92, 246, 0.8)',
+                    borderRadius: 6,
+                    borderSkipped: false,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: textColor, font: { family: 'Inter' } }
+                    },
+                    y: {
+                        grid: { color: gridColor },
+                        ticks: { 
+                            color: textColor, 
+                            font: { family: 'Inter' },
+                            stepSize: 1
+                        },
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        
+        // Breakdown Chart
+        const breakdownCtx = document.getElementById('breakdownChart').getContext('2d');
+        breakdownChart = new Chart(breakdownCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Pre-Orders', 'Regular'],
+                datasets: [{
+                    data: [0, 0],
+                    backgroundColor: ['#8b5cf6', '#22c55e'],
+                    borderWidth: 0,
+                    cutout: '70%'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    }
+    
+    function loadData() {
+        showLoading(true);
+        
+        fetch(`/api/analytics/?period=${currentPeriod}&type=${currentType}`)
+            .then(response => response.json())
+            .then(data => {
+                updateStats(data);
+                updateChart(data);
+                updateBreakdown(data);
+                updateTable(data);
+                showLoading(false);
+            })
+            .catch(error => {
+                console.error('Error loading data:', error);
+                showLoading(false);
+            });
+    }
+    
+    function showLoading(show) {
+        document.getElementById('chartLoading').classList.toggle('show', show);
+        document.getElementById('tableLoading').classList.toggle('show', show);
+    }
+    
+    function updateStats(data) {
+        // Current period stats
+        document.getElementById('booksSold').textContent = data.current.books_sold.toLocaleString();
+        document.getElementById('ordersCount').textContent = data.current.orders.toLocaleString();
+        
+        // Changes
+        updateChangeIndicator('booksSoldChange', data.current.qty_change);
+        updateChangeIndicator('ordersChange', data.current.order_change);
+        
+        // All-time stats
+        document.getElementById('allTimeBooks').textContent = data.all_time.books_sold.toLocaleString();
+        document.getElementById('allTimeOrders').textContent = data.all_time.orders.toLocaleString();
+    }
+    
+    function updateChangeIndicator(elementId, change) {
+        const element = document.getElementById(elementId);
+        element.className = 'stat-change';
+        
+        if (change > 0) {
+            element.classList.add('stat-change-up');
+            element.innerHTML = `<i class="bi bi-arrow-up"></i> ${change}%`;
+        } else if (change < 0) {
+            element.classList.add('stat-change-down');
+            element.innerHTML = `<i class="bi bi-arrow-down"></i> ${Math.abs(change)}%`;
+        } else {
+            element.classList.add('stat-change-neutral');
+            element.innerHTML = `<i class="bi bi-dash"></i> 0%`;
+        }
+    }
+    
+    function updateChart(data) {
+        const labels = data.chart.map(d => d.label);
+        const values = data.chart.map(d => d.value);
+        
+        salesChart.data.labels = labels;
+        salesChart.data.datasets[0].data = values;
+        salesChart.update('none');
+        
+        // Update chart title
+        const periodLabels = {
+            'day': 'Today',
+            'week': 'This Week',
+            'month': 'This Month',
+            'year': 'This Year'
+        };
+        document.getElementById('chartTitle').textContent = `Sales - ${periodLabels[currentPeriod]}`;
+    }
+    
+    function updateBreakdown(data) {
+        const preorder = data.breakdown.preorder;
+        const regular = data.breakdown.regular;
+        
+        breakdownChart.data.datasets[0].data = [preorder, regular];
+        breakdownChart.update('none');
+        
+        document.getElementById('preorderCount').textContent = preorder.toLocaleString();
+        document.getElementById('regularCount').textContent = regular.toLocaleString();
+    }
+    
+    function updateTable(data) {
+        const tbody = document.getElementById('salesTableBody');
+        
+        if (data.recent_sales.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="empty-state">
+                        <i class="bi bi-inbox"></i>
+                        <p>No sales found for this period</p>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+        
+        tbody.innerHTML = data.recent_sales.map(sale => `
+            <tr>
+                <td>
+                    <span class="order-badge">
+                        <i class="bi bi-hash"></i>${sale.order_number}
+                    </span>
+                </td>
+                <td>${escapeHtml(sale.customer)}</td>
+                <td>
+                    <span class="type-badge ${sale.is_preorder ? 'type-badge-preorder' : 'type-badge-regular'}">
+                        ${sale.is_preorder ? 'Pre-Order' : 'Regular'}
+                    </span>
+                </td>
+                <td>
+                    <span class="qty-badge">${sale.quantity}</span>
+                </td>
+                <td>${sale.date}</td>
+            </tr>
+        `).join('');
+    }
+    
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+});
+</script>
+{% endblock %}

@@ -31,7 +31,7 @@
             {% for order in page_obj %}
             <div class="card shadow-lg border-0 rounded-4 overflow-hidden position-relative animate-in">
                 <!-- Status Strip -->
-                <div class="position-absolute top-0 start-0 w-100" style="height: 6px; background: linear-gradient(90deg, #0d6efd, #0dcaf0);"></div>
+                <div class="position-absolute top-0 start-0 w-100 status-strip"></div>
                 
                 <div class="card-body p-4 p-md-5 d-flex flex-column">
                     <!-- Order Header -->
@@ -131,9 +131,9 @@
 <style>
     /* Custom Scrollbar for the items list */
     .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-    .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
-    .custom-scrollbar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #adb5bd; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: var(--bg-tertiary); }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
 
     /* Touch Feedback Animation */
     @keyframes slideIn {
@@ -145,9 +145,45 @@
     }
     .btn-packed {
         transition: transform 0.1s;
+        background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%) !important;
+    }
+    .btn-packed:hover {
+        background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%) !important;
     }
     .btn-packed:active {
         transform: scale(0.98);
+    }
+    
+    /* Dark mode fixes for simplified view */
+    .bg-body-tertiary {
+        background: var(--bg-tertiary) !important;
+    }
+    
+    .border-bottom {
+        border-color: var(--border-color) !important;
+    }
+    
+    .border-top {
+        border-color: var(--border-color) !important;
+    }
+    
+    /* Card styling */
+    .card {
+        background: var(--bg-primary);
+    }
+    
+    .card-footer {
+        background: var(--bg-tertiary);
+    }
+    
+    /* Status strip gradient - works in both modes */
+    .status-strip {
+        height: 6px;
+        background: linear-gradient(90deg, var(--accent), #06b6d4);
+    }
+    
+    .text-primary {
+        color: var(--accent) !important;
     }
 </style>
 

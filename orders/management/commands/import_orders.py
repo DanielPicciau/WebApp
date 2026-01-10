@@ -2,6 +2,21 @@ import pandas as pd
 from django.core.management.base import BaseCommand
 from orders.models import Order, LineItem
 import os
+from datetime import datetime
+from django.utils import timezone
+
+
+def parse_shopify_date(date_str):
+    """Parse Shopify date format like '2025-10-11 16:57:10 +0100'"""
+    if not date_str:
+        return None
+    try:
+        # Parse the date string with timezone offset
+        dt = datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S %z')
+        return dt
+    except (ValueError, TypeError):
+        return None
+
 
 class Command(BaseCommand):
     help = 'Import orders from CSV'
@@ -32,6 +47,9 @@ class Command(BaseCommand):
                  except:
                      pass
 
+            # Parse the original order date from Shopify
+            order_date = parse_shopify_date(row['Created at'])
+            
             order, created = Order.objects.get_or_create(
                 order_number=order_number,
                 defaults={
@@ -39,7 +57,8 @@ class Command(BaseCommand):
                     'shipping_address': f"{row['Shipping Address1']} {row['Shipping Address2']} {row['Shipping City']} {row['Shipping Zip']}".strip(),
                     'subtotal': subtotal,
                     'currency': row['Currency'] if row['Currency'] else 'GBP',
-                    'is_fulfilled': row['Fulfillment Status'] == 'fulfilled'
+                    'is_fulfilled': row['Fulfillment Status'] == 'fulfilled',
+                    'order_date': order_date
                 }
             )
             
@@ -72,21 +91,26 @@ class Command(BaseCommand):
             
             # Let's purge items for the order if created (fresh start for that order) - wait, no, because we loop rows.
             
-            # Check if exists
-            exists = LineItem.objects.filter(
+            # Parse quantity
+            quantity = 1
+            if row['Lineitem quantity']:
+                try:
+                    quantity = int(float(row['Lineitem quantity']))
+                except:
+                    pass
+            
+            # Check if this line item already exists for this order
+            existing_item = LineItem.objects.filter(
                 order=order,
                 product_name=row['Lineitem name'],
                 sku=row['Lineitem sku']
-            ).exists()
+            ).first()
 
-            if not exists and row['Lineitem name']:
-                quantity = 1
-                if row['Lineitem quantity']:
-                    try:
-                        quantity = int(float(row['Lineitem quantity']))
-                    except:
-                        pass
-                
+            if existing_item:
+                # Add to existing quantity (handles multiple CSV rows for same product)
+                existing_item.quantity += quantity
+                existing_item.save()
+            elif row['Lineitem name']:
                 LineItem.objects.create(
                     order=order,
                     product_name=row['Lineitem name'],

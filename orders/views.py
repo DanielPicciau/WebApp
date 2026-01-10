@@ -171,5 +171,29 @@ def add_order(request):
         
     return render(request, 'orders/add_order.html', {
         'form': form,
-        'formset': formset
+        'formset': formset,
+        'is_edit': False
+    })
+
+
+@user_passes_test(lambda u: u.is_superuser)
+def edit_order(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+    
+    if request.method == 'POST':
+        form = OrderForm(request.POST, instance=order)
+        formset = LineItemFormSet(request.POST, instance=order)
+        if form.is_valid() and formset.is_valid():
+            form.save()
+            formset.save()
+            return redirect('order_list')
+    else:
+        form = OrderForm(instance=order)
+        formset = LineItemFormSet(instance=order)
+        
+    return render(request, 'orders/add_order.html', {
+        'form': form,
+        'formset': formset,
+        'order': order,
+        'is_edit': True
     })
