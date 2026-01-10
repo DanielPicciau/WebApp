@@ -115,15 +115,40 @@ from django.core.paginator import Paginator
 
 @user_passes_test(lambda u: u.is_superuser)
 def simplified_view(request):
-    # Only get unpacked orders
-    orders_list = Order.objects.filter(is_packed=False).order_by('created_at')
+    search_query = request.GET.get('q', '')
+    sort_option = request.GET.get('sort', 'oldest')
+
+    # Base Query: Only unpacked orders
+    orders_list = Order.objects.filter(is_packed=False)
+
+    # Search
+    if search_query:
+        orders_list = orders_list.filter(
+            Q(order_number__icontains=search_query) |
+            Q(customer_name__icontains=search_query) |
+            Q(shipping_address__icontains=search_query)
+        )
+
+    # Sort
+    if sort_option == 'newest':
+        orders_list = orders_list.order_by('-created_at')
+    elif sort_option == 'value_high':
+        orders_list = orders_list.order_by('-subtotal')
+    elif sort_option == 'value_low':
+        orders_list = orders_list.order_by('subtotal')
+    else: # oldest
+        orders_list = orders_list.order_by('created_at')
     
     paginator = Paginator(orders_list, 1) # Show 1 order per page
     
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
-    return render(request, 'orders/simplified.html', {'page_obj': page_obj})
+    return render(request, 'orders/simplified.html', {
+        'page_obj': page_obj,
+        'search_query': search_query,
+        'sort_option': sort_option
+    })
 
 
 

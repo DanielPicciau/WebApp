@@ -1,113 +1,175 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container-fluid p-0">
-    <div class="row mb-2">
-        <div class="col-12 text-end">
-            <a href="{% url 'order_list' %}" class="btn btn-outline-secondary btn-sm">
-                <i class="bi bi-list-ul"></i> Advanced View
+<div class="container-fluid px-0 h-100">
+    <!-- Top Bar: Navigation & Tools -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center px-3 py-2 bg-white border-bottom shadow-sm mb-3">
+        <div class="mb-2 mb-md-0 d-flex align-items-center">
+            <a href="{% url 'order_list' %}" class="btn btn-outline-secondary btn-sm me-3">
+                <i class="bi bi-arrow-left"></i> Back to List
             </a>
+            <h5 class="mb-0 text-primary fw-bold">Focused Mode</h5>
         </div>
-    </div>
-</div>
-
-<div class="row min-vh-75 justify-content-center align-items-center" id="touch-area">
-    <div class="col-md-8 col-lg-6">
-        {% for order in page_obj %}
-        <div class="card shadow-lg border-0 h-100">
-            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3">
-                <h3 class="h4 mb-0 fw-bold">{{ order.order_number }}</h3>
-                <span class="badge bg-warning text-dark fs-6">{{ order.currency }} {{ order.subtotal }}</span>
+        
+        <form method="get" class="d-flex flex-grow-1 flex-md-grow-0 gap-2">
+            <div class="input-group input-group-sm">
+                <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                <input type="text" name="q" class="form-control" value="{{ search_query }}" placeholder="Search...">
             </div>
-            <div class="card-body p-4 d-flex flex-column">
+            <select name="sort" class="form-select form-select-sm w-auto" onchange="this.form.submit()">
+                <option value="oldest" {% if sort_option == 'oldest' %}selected{% endif %}>📅 Oldest First</option>
+                <option value="newest" {% if sort_option == 'newest' %}selected{% endif %}>📅 Newest First</option>
+                <option value="value_high" {% if sort_option == 'value_high' %}selected{% endif %}>💰 Value H-L</option>
+                <option value="value_low" {% if sort_option == 'value_low' %}selected{% endif %}>💰 Value L-H</option>
+            </select>
+        </form>
+    </div>
+
+    <!-- Main Card Display -->
+    <div class="row justify-content-center align-items-center m-0" style="min-height: 70vh;" id="touch-area">
+        <div class="col-12 col-md-8 col-lg-6 col-xl-5">
+            {% for order in page_obj %}
+            <div class="card shadow-lg border-0 rounded-4 overflow-hidden position-relative animate-in">
+                <!-- Status Strip -->
+                <div class="position-absolute top-0 start-0 w-100" style="height: 6px; background: linear-gradient(90deg, #0d6efd, #0dcaf0);"></div>
                 
-                <!-- Customer Info -->
-                <div class="mb-4 text-center">
-                    <h2 class="display-6 fw-bold privacy-mask">{{ order.customer_name }}</h2>
-                    <p class="text-muted privacy-mask">{{ order.shipping_address }}</p>
-                </div>
+                <div class="card-body p-4 p-md-5 d-flex flex-column">
+                    <!-- Order Header -->
+                    <div class="d-flex justify-content-between align-items-start mb-4">
+                        <div>
+                            <h6 class="text-uppercase text-muted fw-bold mb-1" style="font-size: 0.8rem; letter-spacing: 1px;">Order Number</h6>
+                            <h1 class="display-4 fw-bold mb-0 text-dark">{{ order.order_number }}</h1>
+                            <div class="mt-1 text-muted small"><i class="bi bi-clock me-1"></i> {{ order.created_at|date:"D, d M H:i" }}</div>
+                        </div>
+                        <div class="text-end">
+                            <h3 class="text-primary fw-bold mb-0">{{ order.currency }} {{ order.subtotal }}</h3>
+                            <span class="badge bg-light text-dark border mt-2">{{ order.items.count }} items</span>
+                        </div>
+                    </div>
 
-                <hr>
+                    <!-- Customer Info (Privacy Masking applied) -->
+                    <div class="bg-light rounded-3 p-3 mb-4">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-person-circle fs-4 text-secondary me-2"></i>
+                            <h4 class="mb-0 privacy-mask">{{ order.customer_name }}</h4>
+                        </div>
+                        <div class="d-flex align-items-start">
+                            <i class="bi bi-geo-alt fs-5 text-secondary me-2 mt-1"></i>
+                            <p class="mb-0 ms-1 privacy-mask fs-6 text-muted">{{ order.shipping_address }}</p>
+                        </div>
+                    </div>
 
-                <!-- Items List -->
-                <div class="flex-grow-1 overflow-auto mb-4" style="max-height: 40vh;">
-                    {% if order.items.all %}
+                    <h6 class="text-uppercase text-muted fw-bold mb-3 border-bottom pb-2">Packing List</h6>
+                    
+                    <!-- Scrollable Items List -->
+                    <div class="flex-grow-1 overflow-auto pe-1 custom-scrollbar" style="max-height: 35vh;">
                         <ul class="list-group list-group-flush">
                             {% for item in order.items.all %}
-                            <li class="list-group-item d-flex justify-content-between align-items-center py-3 fs-5">
-                                <span>{{ item.product_name }}</span>
-                                <span class="badge bg-primary rounded-pill fs-5">{{ item.quantity }}</span>
+                            <li class="list-group-item px-0 py-3 border-bottom-0 d-flex justify-content-between align-items-center">
+                                <div class="pe-3">
+                                    <h5 class="mb-1 text-dark">{{ item.product_name }}</h5>
+                                    {% if item.sku %}<small class="text-muted text-uppercase">SKU: {{ item.sku }}</small>{% endif %}
+                                </div>
+                                <span class="badge bg-primary rounded-3 fs-5 px-3 py-2 shadow-sm">{{ item.quantity }}</span>
                             </li>
                             {% endfor %}
                         </ul>
+                    </div>
+
+                    <!-- Main Action -->
+                    <div class="mt-4 pt-3 border-top">
+                        <a href="{% url 'toggle_order' order.id %}?next={% url 'simplified_view' %}?page={{ page_obj.number }}%26q={{ search_query }}%26sort={{ sort_option }}" 
+                           class="btn btn-success w-100 py-3 rounded-3 shadow-lg btn-packed">
+                            <span class="h3 mb-0 fw-bold"><i class="bi bi-box-seam-fill me-2"></i> PACKED</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Footer Navigation -->
+                <div class="card-footer bg-white py-3 border-top-0 d-flex justify-content-between align-items-center">
+                    {% if page_obj.has_previous %}
+                        <a href="?page={{ page_obj.previous_page_number }}&q={{ search_query }}&sort={{ sort_option }}" 
+                           class="btn btn-outline-secondary rounded-pill px-4" id="prev-btn">
+                            <i class="bi bi-chevron-left me-1"></i> Prev
+                        </a>
                     {% else %}
-                        <p class="text-center text-muted">No items in this order.</p>
+                        <button class="btn btn-outline-light text-muted px-4" disabled>Start</button>
+                    {% endif %}
+
+                    <span class="text-muted fw-bold small text-uppercase">
+                        {{ page_obj.number }} <span class="fw-normal mx-1">of</span> {{ page_obj.paginator.num_pages }}
+                    </span>
+
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}&q={{ search_query }}&sort={{ sort_option }}" 
+                           class="btn btn-outline-secondary rounded-pill px-4" id="next-btn">
+                            Next <i class="bi bi-chevron-right ms-1"></i>
+                        </a>
+                    {% else %}
+                        <button class="btn btn-outline-light text-muted px-4" disabled>End</button>
                     {% endif %}
                 </div>
-
-                <!-- Action Button -->
-                <div class="d-grid gap-3">
-                    <a href="{% url 'toggle_order' order.id %}?next={% url 'simplified_view' %}?page={{ page_obj.number }}" class="btn btn-success btn-lg py-3 fw-bold text-uppercase fs-4 shadow">
-                        <i class="bi bi-box-seam me-2"></i> Mark Packed
-                    </a>
+            </div>
+            {% empty %}
+            <div class="text-center py-5 animate-in">
+                <div class="mb-4">
+                    <i class="bi bi-check-circle-fill text-success" style="font-size: 5rem;"></i>
                 </div>
-
-            </div>
-            <div class="card-footer bg-light d-flex justify-content-between align-items-center py-3">
-                
-                {% if page_obj.has_previous %}
-                    <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-outline-secondary btn-lg" id="prev-btn">
-                        <i class="bi bi-arrow-left"></i> Prev
-                    </a>
+                <h1 class="display-5 fw-bold mb-3">All Done!</h1>
+                <p class="lead text-muted mb-4">No matching unpacked orders found.</p>
+                {% if search_query %}
+                    <a href="?sort={{ sort_option }}" class="btn btn-outline-secondary">Clear Search ({{ search_query }})</a>
                 {% else %}
-                    <button class="btn btn-outline-secondary btn-lg" disabled>
-                        <i class="bi bi-arrow-left"></i> Prev
-                    </button>
-                {% endif %}
-
-                <span class="text-muted fw-bold">Order {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-
-                {% if page_obj.has_next %}
-                    <a href="?page={{ page_obj.next_page_number }}" class="btn btn-outline-secondary btn-lg" id="next-btn">
-                        Next <i class="bi bi-arrow-right"></i>
-                    </a>
-                {% else %}
-                    <button class="btn btn-outline-secondary btn-lg" disabled>
-                        Next <i class="bi bi-arrow-right"></i>
-                    </button>
+                    <a href="{% url 'dashboard' %}" class="btn btn-primary btn-lg rounded-pill px-5">Go to Dashboard</a>
                 {% endif %}
             </div>
+            {% endfor %}
         </div>
-        {% empty %}
-        <div class="text-center py-5">
-            <h2 class="display-4 text-success mb-3">All Caught Up! 🎉</h2>
-            <p class="lead text-muted">No unpacked orders remaining.</p>
-            <a href="{% url 'dashboard' %}" class="btn btn-primary btn-lg mt-3">Back to Dashboard</a>
-        </div>
-        {% endfor %}
     </div>
 </div>
 
+<style>
+    /* Custom Scrollbar for the items list */
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #adb5bd; }
+
+    /* Touch Feedback Animation */
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-in {
+        animation: slideIn 0.4s ease-out forwards;
+    }
+    .btn-packed {
+        transition: transform 0.1s;
+    }
+    .btn-packed:active {
+        transform: scale(0.98);
+    }
+</style>
+
 <script>
-    // Basic Touch Swipe functionality
+    // Touch Swipe Logic
     let touchStartX = 0;
     let touchEndX = 0;
     const touchArea = document.getElementById('touch-area');
     
-    // Only enable swipe if we have content
     if (document.querySelector('.card')) {
         touchArea.addEventListener('touchstart', e => {
             touchStartX = e.changedTouches[0].screenX;
-        });
+        }, {passive: true});
 
         touchArea.addEventListener('touchend', e => {
             touchEndX = e.changedTouches[0].screenX;
             handleSwipe();
-        });
+        }, {passive: true});
     }
 
     function handleSwipe() {
-        const threshold = 50; // min distance
+        const threshold = 75; // Increased threshold for accidental swipes
         if (touchEndX < touchStartX - threshold) {
             // Swipe Left -> Next
             const nextBtn = document.getElementById('next-btn');
