@@ -28,6 +28,19 @@
                     </div>
 
                     <h4 class="mb-3">Items</h4>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Quick Add:</label>
+                        <div>
+                            <button type="button" class="btn btn-outline-primary btn-sm me-2" id="btn-add-book">
+                                <i class="bi bi-book"></i> Through Bear's Eyes (£16.99)
+                            </button>
+                            <button type="button" class="btn btn-outline-success btn-sm" id="btn-add-donation">
+                                <i class="bi bi-heart"></i> Add Donation/Tip
+                            </button>
+                        </div>
+                    </div>
+
                     {{ formset.management_form }}
                     <div id="items-container">
                         {% for form in formset %}
@@ -49,7 +62,7 @@
                     </div>
                     
                     <button type="button" class="btn btn-secondary btn-sm mb-4" id="add-item-btn">
-                        <i class="bi bi-plus-circle"></i> Add Another Item
+                        <i class="bi bi-plus-circle"></i> Add Custom Item
                     </button>
 
                     <div class="d-grid gap-2">
@@ -82,19 +95,61 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const addItemBtn = document.getElementById('add-item-btn');
+        const btnAddBook = document.getElementById('btn-add-book');
+        const btnAddDonation = document.getElementById('btn-add-donation');
         const itemsContainer = document.getElementById('items-container');
         const totalForms = document.getElementById('id_items-TOTAL_FORMS');
         const emptyFormHtml = document.getElementById('empty-form').innerHTML;
+        const subtotalInput = document.getElementById('id_subtotal');
 
-        addItemBtn.addEventListener('click', function() {
+        function createRow(productName = '', quantity = 1) {
             const formCount = parseInt(totalForms.value);
             const newFormHtml = emptyFormHtml.replace(/__prefix__/g, formCount);
             
-            const newDiv = document.createElement('div');
-            newDiv.innerHTML = newFormHtml;
-            itemsContainer.appendChild(newDiv.firstElementChild);
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = newFormHtml;
+            const row = tempDiv.firstElementChild;
             
+            itemsContainer.appendChild(row);
             totalForms.value = formCount + 1;
+
+            if (productName) {
+                const nameInput = row.querySelector('input[name$="-product_name"]');
+                const qtyInput = row.querySelector('input[name$="-quantity"]');
+                if (nameInput) nameInput.value = productName;
+                if (qtyInput) qtyInput.value = quantity;
+            }
+            return row;
+        }
+
+        addItemBtn.addEventListener('click', function() {
+            createRow();
+        });
+
+        btnAddBook.addEventListener('click', function() {
+            // Add row
+            createRow("Through Bear's Eyes", 1);
+            
+            // Update Subtotal
+            let currentSub = parseFloat(subtotalInput.value) || 0;
+            currentSub += 16.99;
+            subtotalInput.value = currentSub.toFixed(2);
+        });
+
+        btnAddDonation.addEventListener('click', function() {
+            const amountStr = prompt("Enter donation amount (e.g. 5.00):");
+            if (amountStr) {
+                const amount = parseFloat(amountStr);
+                if (!isNaN(amount)) {
+                    createRow("Donation / Tip", 1);
+                    
+                    let currentSub = parseFloat(subtotalInput.value) || 0;
+                    currentSub += amount;
+                    subtotalInput.value = currentSub.toFixed(2);
+                } else {
+                    alert("Invalid amount entered.");
+                }
+            }
         });
     });
 </script>
