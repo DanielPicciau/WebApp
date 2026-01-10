@@ -14,7 +14,7 @@
             <form method="get" action="" class="row g-2">
                 <div class="col-md-6 col-sm-12">
                     <div class="input-group">
-                        <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
                         <input type="text" name="q" class="form-control" value="{{ search_query }}" placeholder="Search by Order #, Name, or Address...">
                     </div>
                 </div>
@@ -98,7 +98,7 @@
                                         <small class="text-muted">SKU: {{ item.sku }}</small>
                                     {% endif %}
                                 </div>
-                                <span class="badge bg-light text-dark border fs-6">{{ item.quantity }}</span>
+                                <span class="badge border text-body fs-6">{{ item.quantity }}</span>
                             </li>
                         {% endfor %}
                     </ul>
