@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h2 class="h5 mb-0">Add New Order</h2>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <h4 class="mb-3">Order Details</h4>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Customer Name</label>
+                            {{ form.customer_name }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Subtotal</label>
+                            {{ form.subtotal }}
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Currency</label>
+                            {{ form.currency }}
+                        </div>
+                    </div>
+
+                    <h4 class="mb-3">Items</h4>
+                    {{ formset.management_form }}
+                    <div id="items-container">
+                        {% for form in formset %}
+                        <div class="item-row row g-3 mb-2 align-items-end">
+                            {{ form.id }}
+                            <div class="col-md-7">
+                                <label class="form-label">Product Name</label>
+                                {{ form.product_name }}
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Quantity</label>
+                                {{ form.quantity }}
+                            </div>
+                            <div class="col-md-2">
+                                {% if form.instance.pk %}{{ form.DELETE }}{% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <button type="button" class="btn btn-secondary btn-sm mb-4" id="add-item-btn">
+                        <i class="bi bi-plus-circle"></i> Add Another Item
+                    </button>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success">Create Order</button>
+                        <a href="{% url 'order_list' %}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Empty Form Template for JS -->
+<div id="empty-form" style="display:none;">
+    <div class="item-row row g-3 mb-2 align-items-end">
+        <div class="col-md-7">
+            <label class="form-label">Product Name</label>
+            {{ formset.empty_form.product_name }}
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Quantity</label>
+            {{ formset.empty_form.quantity }}
+        </div>
+        <div class="col-md-2">
+            <!-- Delete not needed for fresh rows usually handled by not submitting, but here we just append -->
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const addItemBtn = document.getElementById('add-item-btn');
+        const itemsContainer = document.getElementById('items-container');
+        const totalForms = document.getElementById('id_items-TOTAL_FORMS');
+        const emptyFormHtml = document.getElementById('empty-form').innerHTML;
+
+        addItemBtn.addEventListener('click', function() {
+            const formCount = parseInt(totalForms.value);
+            const newFormHtml = emptyFormHtml.replace(/__prefix__/g, formCount);
+            
+            const newDiv = document.createElement('div');
+            newDiv.innerHTML = newFormHtml;
+            itemsContainer.appendChild(newDiv.firstElementChild);
+            
+            totalForms.value = formCount + 1;
+        });
+    });
+</script>
+{% endblock %}
