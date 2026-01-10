@@ -79,6 +79,11 @@ class Command(BaseCommand):
                     except:
                         pass
                 
+                # Update order_date if missing
+                if not order.order_date and order_date:
+                    order.order_date = order_date
+                    has_changes = True
+                
                 if has_changes:
                     order.save()
 
