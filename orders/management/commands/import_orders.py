@@ -25,21 +25,44 @@ class Command(BaseCommand):
 
             # Create or Get Order
             # We rely on the first occurrence having the shipping details
+            subtotal = 0.00
+            if row['Subtotal']:
+                 try:
+                     subtotal = float(row['Subtotal'])
+                 except:
+                     pass
+
             order, created = Order.objects.get_or_create(
                 order_number=order_number,
                 defaults={
                     'customer_name': row['Shipping Name'],
                     'shipping_address': f"{row['Shipping Address1']} {row['Shipping Address2']} {row['Shipping City']} {row['Shipping Zip']}".strip(),
+                    'subtotal': subtotal,
+                    'currency': row['Currency'] if row['Currency'] else 'GBP',
                     'is_fulfilled': row['Fulfillment Status'] == 'fulfilled'
                 }
             )
             
             # If the order was just created and we missed shipping info (unlikely if sorted), 
             # or if we want to update it just in case:
-            if not created and not order.customer_name and row['Shipping Name']:
-                 order.customer_name = row['Shipping Name']
-                 order.shipping_address = f"{row['Shipping Address1']} {row['Shipping Address2']} {row['Shipping City']} {row['Shipping Zip']}".strip()
-                 order.save()
+            if not created:
+                has_changes = False
+                if not order.customer_name and row['Shipping Name']:
+                     order.customer_name = row['Shipping Name']
+                     order.shipping_address = f"{row['Shipping Address1']} {row['Shipping Address2']} {row['Shipping City']} {row['Shipping Zip']}".strip()
+                     has_changes = True
+                
+                # Update subtotal if it was 0 (or adjust logic as needed)
+                if order.subtotal == 0 and row['Subtotal']:
+                    try:
+                        order.subtotal = float(row['Subtotal'])
+                        has_changes = True
+                    except:
+                        pass
+                
+                if has_changes:
+                    order.save()
+
 
             # Create Line Item
             # Basic check to avoid duplicates if running multiple times? 

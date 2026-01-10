@@ -121,7 +121,7 @@ import os
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # Authentication
-LOGIN_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/accounts/login/'
 LOGIN_URL = '/accounts/login/'
 

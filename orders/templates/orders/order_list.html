@@ -48,14 +48,15 @@
                             <h5 class="card-title d-flex align-items-center flex-wrap gap-2">
                                 <span class="fw-bold">{{ order.order_number }}</span>
                                 <span class="text-muted d-none d-sm-inline">&bull;</span>
-                                <span>{{ order.customer_name }}</span>
+                                <span class="privacy-mask">{{ order.customer_name }}</span>
                                 {% if order.is_fulfilled %}
                                     <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill" style="font-size: 0.7em;">
                                         SHOPIFY: FULFILLED
                                     </span>
                                 {% endif %}
                             </h5>
-                            <p class="card-text text-muted mb-0"><small><i class="bi bi-geo-alt-fill me-1"></i>{{ order.shipping_address }}</small></p>
+                            <p class="card-text text-muted mb-1"><small><i class="bi bi-geo-alt-fill me-1"></i><span class="privacy-mask">{{ order.shipping_address }}</span></small></p>
+                            <p class="card-text fw-bold text-primary"><small>Total: {{ order.currency }} {{ order.subtotal }}</small></p>
                         </div>
                         <div class="col-md-4 text-md-end text-sm-start">
                              <a href="{% url 'toggle_order' order.id %}" class="btn {% if order.is_packed %}btn-secondary{% else %}btn-success{% endif %} w-100 w-md-auto">
