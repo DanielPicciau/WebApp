@@ -48,11 +48,10 @@
                 {% if filter_status == 'packed' %} <span class="badge bg-white text-primary ms-1">{{ orders.count }}</span>{% endif %}
             </a>
         </li>
-    </ul>
         <li class="nav-item">
-            <a class="nav-link {% if filter_status == 'packed' %}active{% endif %}" href="?status=packed{% if search_query %}&q={{ search_query }}{% endif %}">
-                <i class="bi bi-check-circle me-2"></i>Packed / Completed
-                {% if filter_status == 'packed' %} <span class="badge bg-white text-primary ms-1">{{ orders.count }}</span>{% endif %}
+            <a class="nav-link {% if filter_status == 'verification' %}active{% endif %}" href="?status=verification&sort={{ sort_option }}{% if search_query %}&q={{ search_query }}{% endif %}">
+                <i class="bi bi-clipboard-check me-2"></i>Verification (Temp)
+                {% if filter_status == 'verification' %} <span class="badge bg-white text-primary ms-1">{{ orders.count }}</span>{% endif %}
             </a>
         </li>
     </ul>
@@ -68,6 +67,11 @@
                                 <span class="fw-bold">{{ order.order_number }}</span>
                                 <span class="text-muted d-none d-sm-inline">&bull;</span>
                                 <span class="privacy-mask">{{ order.customer_name }}</span>
+                                {% if order.is_verified %}
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill" style="font-size: 0.7em;">
+                                        <i class="bi bi-check-circle-fill me-1"></i>VERIFIED
+                                    </span>
+                                {% endif %}
                                 {% if order.is_fulfilled %}
                                     <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill" style="font-size: 0.7em;">
                                         SHOPIFY: FULFILLED
@@ -78,13 +82,23 @@
                             <p class="card-text fw-bold text-primary"><small>Total: {{ order.currency }} {{ order.subtotal }}</small></p>
                         </div>
                         <div class="col-md-4 text-md-end text-sm-start">
-                             <a href="{% url 'toggle_order' order.id %}" class="btn {% if order.is_packed %}btn-secondary{% else %}btn-success{% endif %} w-100 w-md-auto">
-                                {% if order.is_packed %}
-                                    <i class="bi bi-arrow-counterclockwise me-1"></i> Undo
-                                {% else %}
-                                    <i class="bi bi-box-seam-fill me-1"></i> Mark Packed
-                                {% endif %}
-                            </a>
+                            {% if filter_status == 'verification' %}
+                                <a href="{% url 'toggle_verify' order.id %}?next={% url 'order_list' %}?status=verification&sort={{ sort_option }}{% if search_query %}&q={{ search_query }}{% endif %}" class="btn {% if order.is_verified %}btn-success{% else %}btn-outline-success{% endif %} w-100 w-md-auto">
+                                    {% if order.is_verified %}
+                                        <i class="bi bi-check-circle-fill me-1"></i> Verified
+                                    {% else %}
+                                        <i class="bi bi-clipboard-check me-1"></i> Verify
+                                    {% endif %}
+                                </a>
+                            {% else %}
+                                <a href="{% url 'toggle_order' order.id %}" class="btn {% if order.is_packed %}btn-secondary{% else %}btn-success{% endif %} w-100 w-md-auto">
+                                    {% if order.is_packed %}
+                                        <i class="bi bi-arrow-counterclockwise me-1"></i> Undo
+                                    {% else %}
+                                        <i class="bi bi-box-seam-fill me-1"></i> Mark Packed
+                                    {% endif %}
+                                </a>
+                            {% endif %}
                         </div>
                     </div>
                     

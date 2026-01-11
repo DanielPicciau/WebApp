@@ -8,6 +8,7 @@ class Order(models.Model):
     currency = models.CharField(max_length=10, default='GBP')
     is_fulfilled = models.BooleanField(default=False) # Represents Shopify/System status
     is_packed = models.BooleanField(default=False)    # Represents manual packing status
+    is_verified = models.BooleanField(default=False)  # Temporary verification status
     order_date = models.DateTimeField(null=True, blank=True)  # Original order date from Shopify
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

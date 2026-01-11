@@ -61,6 +61,8 @@ def order_list(request):
     
     if filter_status == 'packed':
         orders = Order.objects.filter(is_packed=True)
+    elif filter_status == 'verification':
+        orders = Order.objects.filter(is_packed=True)  # Show all packed orders for verification
     else:
         orders = Order.objects.filter(is_packed=False)
 
@@ -110,6 +112,17 @@ def toggle_order(request, order_id):
     if next_url:
         return redirect(next_url)
     return redirect('order_list')
+
+@user_passes_test(lambda u: u.is_superuser)
+def toggle_verify(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+    order.is_verified = not order.is_verified
+    order.save()
+    
+    next_url = request.GET.get('next')
+    if next_url:
+        return redirect(next_url)
+    return redirect('order_list') + '?status=verification'
 
 from django.core.paginator import Paginator
 

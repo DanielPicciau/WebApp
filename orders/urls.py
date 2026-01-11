@@ -9,4 +9,5 @@ urlpatterns = [
     path('api/updates/', views.check_updates, name='check_updates'),
     path('', views.order_list, name='order_list'),
     path('toggle/<int:order_id>/', views.toggle_order, name='toggle_order'),
+    path('toggle-verify/<int:order_id>/', views.toggle_verify, name='toggle_verify'),
 ]
