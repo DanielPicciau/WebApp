@@ -20,6 +20,7 @@ class PaymentPeriod(models.Model):
     start_date = models.DateField()
     end_date = models.DateField()
     amount_per_book = models.DecimalField(max_digits=10, decimal_places=2, default=1.00)
+    manual_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Override the calculated amount with a manual value")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     payment_due_date = models.DateField()
     paid_date = models.DateField(null=True, blank=True)
@@ -70,8 +71,20 @@ class PaymentPeriod(models.Model):
     
     @property
     def total_amount(self):
-        """Calculate total amount owed for this period."""
+        """Calculate total amount owed for this period, or use manual override."""
+        if self.manual_amount is not None:
+            return self.manual_amount
         return self.books_sold * self.amount_per_book
+    
+    @property
+    def calculated_amount(self):
+        """Always return the calculated amount (books_sold * amount_per_book)."""
+        return self.books_sold * self.amount_per_book
+    
+    @property
+    def is_manual_override(self):
+        """Check if manual amount is being used."""
+        return self.manual_amount is not None
     
     @property
     def is_overdue(self):

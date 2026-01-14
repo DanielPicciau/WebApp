@@ -241,6 +241,124 @@
         border-color: var(--accent);
     }
     
+    .amount-edit-wrapper {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .amount-display {
+        font-weight: 600;
+        font-size: 1.0625rem;
+        color: var(--text-primary);
+        cursor: pointer;
+        padding: 0.25rem 0.5rem;
+        border-radius: 6px;
+        transition: background 0.15s;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .amount-display:hover {
+        background: var(--bg-secondary);
+    }
+    
+    .amount-display .edit-icon {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        opacity: 0.5;
+    }
+    
+    .amount-display:hover .edit-icon {
+        opacity: 1;
+    }
+    
+    .amount-display.manual-override {
+        color: #6366f1;
+    }
+    
+    .amount-display.manual-override .edit-icon {
+        color: #6366f1;
+        opacity: 0.8;
+    }
+    
+    .amount-input-group {
+        display: none;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .amount-edit-wrapper.editing .amount-display {
+        display: none;
+    }
+    
+    .amount-edit-wrapper.editing .amount-input-group {
+        display: inline-flex;
+    }
+    
+    .amount-input {
+        width: 80px;
+        padding: 0.4rem 0.6rem;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        font-size: 0.875rem;
+        text-align: center;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+    }
+    
+    .amount-input:focus {
+        outline: none;
+        border-color: var(--accent);
+    }
+    
+    .amount-form {
+        display: inline;
+    }
+    
+    .reset-form {
+        display: inline;
+        margin-left: 0.5rem;
+    }
+    
+    .reset-link {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        text-decoration: none;
+    }
+    
+    .reset-link:hover {
+        color: var(--accent);
+        text-decoration: underline;
+    }
+    
+    .btn-sm {
+        padding: 0.3rem 0.6rem;
+        font-size: 0.75rem;
+    }
+    
+    .btn-cancel {
+        background: #e2e8f0;
+        color: #64748b;
+    }
+    
+    .btn-cancel:hover {
+        background: #cbd5e1;
+    }
+    
+    [data-bs-theme="dark"] .btn-cancel {
+        background: #334155;
+        color: #94a3b8;
+    }
+    
+    [data-bs-theme="dark"] .btn-cancel:hover {
+        background: #475569;
+    }
+
     .payment-btn {
         padding: 0.5rem 1rem;
         border-radius: 6px;
@@ -445,7 +563,33 @@
                         <span class="books-count">{{ period.books_sold }}</span>
                     </td>
                     <td>
-                        <span class="amount">£{{ period.total_amount }}</span>
+                        <form action="{% url 'update_amount' period.id %}" method="post" class="amount-form">
+                            {% csrf_token %}
+                            <div class="amount-edit-wrapper">
+                                <span class="amount-display {% if period.is_manual_override %}manual-override{% endif %}" onclick="this.parentElement.classList.add('editing')">
+                                    £{{ period.total_amount }}
+                                    {% if period.is_manual_override %}
+                                    <i class="bi bi-pencil-fill edit-icon" title="Manually set (calculated: £{{ period.calculated_amount }})"></i>
+                                    {% else %}
+                                    <i class="bi bi-pencil edit-icon" title="Click to edit"></i>
+                                    {% endif %}
+                                </span>
+                                <div class="amount-input-group">
+                                    <input type="text" name="amount" class="amount-input" value="{{ period.total_amount }}" placeholder="Amount">
+                                    <button type="submit" class="payment-btn btn-save btn-sm">Save</button>
+                                    <button type="button" class="payment-btn btn-cancel btn-sm" onclick="this.closest('.amount-edit-wrapper').classList.remove('editing')">✕</button>
+                                </div>
+                            </div>
+                        </form>
+                        {% if period.is_manual_override %}
+                        <form action="{% url 'update_amount' period.id %}" method="post" class="reset-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="amount" value="auto">
+                            <button type="submit" class="reset-link" title="Reset to calculated amount (£{{ period.calculated_amount }})">
+                                <i class="bi bi-arrow-counterclockwise"></i> Reset
+                            </button>
+                        </form>
+                        {% endif %}
                     </td>
                     <td>
                         <span class="due-date {% if period.is_overdue %}overdue{% endif %}">

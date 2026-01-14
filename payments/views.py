@@ -1,6 +1,8 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.http import JsonResponse
+from decimal import Decimal, InvalidOperation
 from .models import PaymentPeriod
 from datetime import date
 
@@ -59,5 +61,35 @@ def mark_unpaid(request, period_id):
         period.paid_date = None
         period.update_status()
         messages.success(request, f'{period.period_name} marked as unpaid')
+    
+    return redirect('payments')
+
+
+@login_required
+def update_amount(request, period_id):
+    """Update the manual amount for a period."""
+    period = get_object_or_404(PaymentPeriod, id=period_id)
+    
+    if request.method == 'POST':
+        amount_str = request.POST.get('amount', '').strip()
+        
+        if amount_str == '' or amount_str.lower() == 'auto':
+            # Clear manual override, use calculated amount
+            period.manual_amount = None
+            period.save()
+            messages.success(request, f'{period.period_name} amount reset to calculated value (£{period.total_amount})')
+        else:
+            try:
+                # Remove currency symbol if present
+                amount_str = amount_str.replace('£', '').strip()
+                amount = Decimal(amount_str)
+                if amount < 0:
+                    messages.error(request, 'Amount cannot be negative')
+                    return redirect('payments')
+                period.manual_amount = amount
+                period.save()
+                messages.success(request, f'{period.period_name} amount manually set to £{amount}')
+            except (InvalidOperation, ValueError):
+                messages.error(request, 'Invalid amount entered')
     
     return redirect('payments')
